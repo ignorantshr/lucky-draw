@@ -11,15 +11,6 @@ import (
 	beego "github.com/beego/beego/v2/server/web"
 )
 
-type actionType int
-
-const (
-	addAction actionType = iota
-	updateAction
-	deleteAction
-	getAction
-)
-
 var prizeService service.PrizeService
 
 func init() {
