@@ -14,12 +14,14 @@ CREATE TABLE `prize` (
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE KEY `name_INDEX` (`name`) USING BTREE
 ) ENGINE=InnoDB COMMENT='奖品表';
+INSERT INTO `prize` VALUES(1, "占位", NULL);
 
 SELECT 'create table prize_pool';
 DROP TABLE IF EXISTS `prize_pool`;
 CREATE TABLE `prize_pool` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `name` varchar(255) NOT NULL COMMENT '名称',
+  `type` int(4) NOT NULL DEFAULT 1 COMMENT '抽奖类型',
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE KEY `name_INDEX` (`name`) USING BTREE
 ) ENGINE=InnoDB COMMENT='奖池表';
@@ -27,11 +29,13 @@ CREATE TABLE `prize_pool` (
 SELECT 'create table prize_pool_prize';
 DROP TABLE IF EXISTS `prize_pool_prize`;
 CREATE TABLE `prize_pool_prize` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `prize_pool_id` bigint(20) NOT NULL COMMENT '奖池id',
   `prize_id` bigint(20) NOT NULL COMMENT '奖品id',
   `prize_probability` int(5) DEFAULT 0 COMMENT '中奖概率',
   `prize_number` bigint(20) DEFAULT 0 COMMENT '奖品数量',
-  PRIMARY KEY (`prize_pool_id`, `prize_id`) USING BTREE
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE KEY (`prize_pool_id`, `prize_id`) USING BTREE
 ) ENGINE=InnoDB COMMENT='奖池-奖品关联表';
 
 SELECT 'create table user';
@@ -46,8 +50,10 @@ CREATE TABLE `user` (
 SELECT 'create table user_prize';
 DROP TABLE IF EXISTS `user_prize`;
 CREATE TABLE `user_prize` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `user_id` bigint(20) DEFAULT 0 COMMENT '用户id',
   `prize_pool_id` bigint(20) NOT NULL COMMENT '奖池id',
   `prize_id` bigint(20) NOT NULL COMMENT '奖品id',
-  PRIMARY KEY (`user_id`, `prize_pool_id`, `prize_id`) USING BTREE
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE KEY (`user_id`, `prize_pool_id`, `prize_id`) USING BTREE
 ) ENGINE=InnoDB COMMENT='账户-奖品关联表';

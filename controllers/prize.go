@@ -6,15 +6,14 @@ import (
 	"lucky-draw/models"
 	"lucky-draw/result"
 	"lucky-draw/service"
-	"lucky-draw/service/impl"
 
 	beego "github.com/beego/beego/v2/server/web"
 )
 
-var prizeService service.PrizeService
+var prizeService *service.PrizeService
 
 func init() {
-	prizeService = &impl.PrizeServiceImpl{}
+	prizeService = &service.PrizeService{}
 }
 
 type PrizeController struct {
@@ -33,7 +32,7 @@ func (p *PrizeController) Update() {
 
 // @router /prize/delete [post]
 func (p *PrizeController) Delete() {
-	p.execute(deleteAction)
+	p.execute(delAction)
 }
 
 // @router /prize/get [post]
@@ -61,7 +60,7 @@ func (p *PrizeController) execute(action actionType) {
 			err = prizeService.Add(&prize)
 		case updateAction:
 			err = prizeService.Update(&prize)
-		case deleteAction:
+		case delAction:
 			err = prizeService.Del(prize.Id)
 		case getAction:
 			ps, err = prizeService.Get(&prize)

@@ -63,9 +63,36 @@ func init() {
 
     beego.GlobalControllerRouter["lucky-draw/controllers:PrizePoolController"] = append(beego.GlobalControllerRouter["lucky-draw/controllers:PrizePoolController"],
         beego.ControllerComments{
+            Method: "AddPrize",
+            Router: "/prizePool/addPrize",
+            AllowHTTPMethods: []string{"post"},
+            MethodParams: param.Make(),
+            Filters: nil,
+            Params: nil})
+
+    beego.GlobalControllerRouter["lucky-draw/controllers:PrizePoolController"] = append(beego.GlobalControllerRouter["lucky-draw/controllers:PrizePoolController"],
+        beego.ControllerComments{
+            Method: "DelPrize4Pool",
+            Router: "/prizePool/delPrize",
+            AllowHTTPMethods: []string{"post"},
+            MethodParams: param.Make(),
+            Filters: nil,
+            Params: nil})
+
+    beego.GlobalControllerRouter["lucky-draw/controllers:PrizePoolController"] = append(beego.GlobalControllerRouter["lucky-draw/controllers:PrizePoolController"],
+        beego.ControllerComments{
             Method: "Delete",
             Router: "/prizePool/delete",
             AllowHTTPMethods: []string{"post"},
+            MethodParams: param.Make(),
+            Filters: nil,
+            Params: nil})
+
+    beego.GlobalControllerRouter["lucky-draw/controllers:PrizePoolController"] = append(beego.GlobalControllerRouter["lucky-draw/controllers:PrizePoolController"],
+        beego.ControllerComments{
+            Method: "Draw",
+            Router: "/prizePool/draw",
+            AllowHTTPMethods: []string{"get"},
             MethodParams: param.Make(),
             Filters: nil,
             Params: nil})
@@ -90,8 +117,26 @@ func init() {
 
     beego.GlobalControllerRouter["lucky-draw/controllers:PrizePoolController"] = append(beego.GlobalControllerRouter["lucky-draw/controllers:PrizePoolController"],
         beego.ControllerComments{
+            Method: "Info",
+            Router: "/prizePool/info",
+            AllowHTTPMethods: []string{"post"},
+            MethodParams: param.Make(),
+            Filters: nil,
+            Params: nil})
+
+    beego.GlobalControllerRouter["lucky-draw/controllers:PrizePoolController"] = append(beego.GlobalControllerRouter["lucky-draw/controllers:PrizePoolController"],
+        beego.ControllerComments{
             Method: "Update",
             Router: "/prizePool/update",
+            AllowHTTPMethods: []string{"post"},
+            MethodParams: param.Make(),
+            Filters: nil,
+            Params: nil})
+
+    beego.GlobalControllerRouter["lucky-draw/controllers:PrizePoolController"] = append(beego.GlobalControllerRouter["lucky-draw/controllers:PrizePoolController"],
+        beego.ControllerComments{
+            Method: "UpdatePrize",
+            Router: "/prizePool/updatePrize",
             AllowHTTPMethods: []string{"post"},
             MethodParams: param.Make(),
             Filters: nil,

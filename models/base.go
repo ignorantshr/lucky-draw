@@ -11,14 +11,8 @@ type BaseModel struct {
 	Name string `json:"name"`
 }
 
-func idCheck(model *BaseModel) bool {
-	return model.Id != 0
-}
-
 func init() {
-	// set default database
-	orm.RegisterDataBase("default", "mysql", "root:Lenovo123-@tcp(10.221.5.7:3306)/lucky_draw?charset=utf8&loc=Local")
-
+	registerDB()
 	// register model
 	orm.RegisterModel(new(Prize))
 	orm.RegisterModel(new(PrizePool))
@@ -26,6 +20,15 @@ func init() {
 
 	// create table
 	// orm.RunSyncdb("default", false, true)
+}
+
+func registerDB() {
+	// set default database
+	orm.RegisterDataBase("default", "mysql", "root:Lenovo123-@tcp(10.221.5.7:3306)/lucky_draw?charset=utf8&loc=Local")
+}
+
+func idCheck(model *BaseModel) bool {
+	return model.Id > 0
 }
 
 func dotx(f func(myTxOrm orm.TxOrmer) error) error {

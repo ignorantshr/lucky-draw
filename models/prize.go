@@ -17,8 +17,8 @@ type Prize struct {
 	// Name string `json:"name"`
 	Url string `json:"url"`
 
-	Probability int   `json:"probability"` // 概率
-	Number      int64 `json:"number"`      // 数量
+	Probability int   `json:"probability" orm:"-"` // 概率
+	Number      int64 `json:"number" orm:"-"`      // 数量
 }
 
 func (p *Prize) String() string {
@@ -28,8 +28,9 @@ func (p *Prize) String() string {
 
 func AddPrize(prize *Prize) error {
 	return dotx(func(txOrm orm.TxOrmer) error {
-		num, err := txOrm.Insert(prize)
-		if err == nil && num != 1 {
+		_, err := txOrm.Insert(prize)
+		if err != nil {
+			log.Println(err)
 			return fmt.Errorf(result.ADD_ERROR, prize.Name)
 		}
 		log.Printf("add prize %v", prize)

@@ -5,6 +5,11 @@ type actionType int
 const (
 	addAction actionType = iota
 	updateAction
-	deleteAction
+	delAction
 	getAction
+	infoAction
+
+	poolAddPrizeAction
+	poolUpdatePrizeAction
+	poolDelPrizeAction
 )
