@@ -104,10 +104,9 @@ func (p *PrizePoolController) Draw() {
 		// 概率数字范围	 {id: [起始数字，终结数字]}
 		probMapper := make(map[int64][2]int)
 		end := 0
-		var hasNull bool
 		for _, v := range pool.Prizes {
 			if v.Id == 1 {
-				hasNull = true
+				// 空奖跳过，只有按数量抽奖时才有意义
 				continue
 			}
 			probMapper[v.Id] = [2]int{end, end + v.Probability}
@@ -115,7 +114,7 @@ func (p *PrizePoolController) Draw() {
 		}
 		log.Printf("priz map: %v", probMapper)
 		var n int
-		if hasNull {
+		if end < 100 {
 			// 有不中奖的概率
 			n = rand.Intn(100)
 			// 未中奖直接返回空值

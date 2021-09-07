@@ -5,14 +5,14 @@ import (
 	"fmt"
 	"log"
 	"lucky-draw/result"
-	"strings"
 
-	"github.com/beego/beego/v2/client/orm"
 	_ "github.com/go-sql-driver/mysql"
+	"gorm.io/gorm"
 )
 
 type DrawType int
 
+// 抽奖类型
 const (
 	ProbabilityType DrawType = iota + 1
 	NumberType
@@ -23,7 +23,11 @@ type PrizePool struct {
 	// Id   int64  `json:"id"`
 	// Name string `json:"name"`
 	Type   DrawType `json:"type"`
-	Prizes []*Prize `json:"prizes" orm:"-"`
+	Prizes []*Prize `json:"prizes" gorm:"-"`
+}
+
+func (PrizePool) TableName() string {
+	return "prize_pool"
 }
 
 func (p *PrizePool) String() string {
@@ -31,104 +35,90 @@ func (p *PrizePool) String() string {
 	return fmt.Sprintf("%s", jsonBtyes)
 }
 
-var poolOrm orm.Ormer
-var poolQs orm.QuerySeter
-
-func init() {
-	poolOrm = orm.NewOrm()
-	poolQs = poolOrm.QueryTable(new(PrizePool))
-}
-
 func AddPrizePool(prizePool *PrizePool) error {
-	return dotx(func(txOrm orm.TxOrmer) error {
-		normalPool(prizePool)
-		_, err := txOrm.Insert(prizePool)
-		if err != nil {
-			log.Println(err)
-			return fmt.Errorf(result.ADD_ERROR, prizePool.Name)
-		}
-		log.Printf("add PrizePool %v", prizePool)
-		return err
-	})
+	normalPool(prizePool)
+	if err := db.Create(prizePool).Error; err != nil {
+		log.Println(err)
+		return fmt.Errorf(result.ADD_ERROR, prizePool.Name)
+	}
+	log.Printf("add PrizePool %v", prizePool)
+	return nil
 }
 
 func UpdatePrizePool(prizePool *PrizePool) error {
 	if !idCheck(&prizePool.BaseModel) {
-		return orm.ErrArgs
+		return result.PARAM_INVALID
 	}
-	return dotx(func(txOrm orm.TxOrmer) error {
-		num, err := txOrm.Update(prizePool)
-		if err == nil && num != 1 {
-			return fmt.Errorf(result.UPDATE_ERROR, prizePool.Name)
-		}
-		log.Printf("update PrizePool %v", prizePool)
-		return err
-	})
+	if err := db.Save(prizePool).Error; err != nil {
+		log.Println(err)
+		return fmt.Errorf(result.UPDATE_ERROR, prizePool.Name)
+	}
+	log.Printf("update PrizePool %v", prizePool)
+	return nil
 }
 
 func DelPrizePool(id int64) error {
-	return dotx(func(txOrm orm.TxOrmer) error {
-		prizePool := &PrizePool{
-			BaseModel: BaseModel{Id: id},
-		}
-		if err := txOrm.Read(prizePool); err != nil {
+	return db.Transaction(func(tx *gorm.DB) error {
+		var prizePool *PrizePool
+		if err := tx.Where(id).Take(&prizePool).Error; err != nil {
+			log.Println(err)
 			return fmt.Errorf(result.NOT_EXIST_ERROR)
 		}
-		num, err := txOrm.Delete(prizePool)
-		if err == nil && num != 1 {
+		if err := db.Delete(&PrizePool{}, id).Error; err != nil {
+			log.Println(err)
 			return fmt.Errorf(result.DEL_ERROR, prizePool.Name)
 		}
 
-		PrizePoolPrize := &PrizePoolPrize{PrizePoolId: id}
-		if _, err = txOrm.Delete(PrizePoolPrize); err != nil {
-			return fmt.Errorf(result.DEL_ERROR, prizePool.Name)
+		// 奖池-奖品 关联表
+		poolPrize := &PrizePoolPrize{
+			PrizePoolId: id,
+		}
+		if err := db.Delete(poolPrize).Error; err != nil {
+			log.Println(err)
+			return fmt.Errorf(result.DEL_ERROR, id)
 		}
 
 		log.Printf("delete PrizePool %v", prizePool)
-		return err
+		return nil
 	})
 }
 
-// 根据条件查询，比如 name、id
+// 根据名称查询
 func GetPrizePool(prizePool *PrizePool) ([]*PrizePool, error) {
 	var ps []*PrizePool
-	var qs orm.QuerySeter
-	if prizePool.Id != 0 {
-		qs = poolQs.Filter("id", prizePool.Id)
+	err := db.Where("name like ?", "%"+prizePool.Name+"%").Find(&ps).Error
+	if err != nil {
+		log.Println(err)
 	}
-	if strings.TrimSpace(prizePool.Name) != "" {
-		qs = poolQs.Filter("name__contains", prizePool.Name)
-	}
-	_, err := qs.All(&ps)
 	return ps, err
 }
 
 func GetAllPrizePool() ([]*PrizePool, error) {
 	var ps []*PrizePool
-	_, err := poolOrm.QueryTable(PrizePool{}).All(&ps)
-	// for _, pool := range ps {
-	// 	poolOrm.QueryTable()
-	// }
+	err := db.Find(&ps).Error
+	if err != nil {
+		log.Println(err)
+	}
 	return ps, err
 }
 
 // 获取奖池的详细信息，包括具体的奖品内容、概率、数量
 func InfoPrizePool(id int64) (*PrizePool, error) {
-	prizePool := new(PrizePool)
-	mapper := make([]*PrizePoolPrize, 0)
-	prizes := make([]*Prize, 0)
+	var prizePool *PrizePool
+	var mapper []*PrizePoolPrize
+	var prizes []*Prize
 
 	var err error
 
-	if err = poolQs.Filter("id", id).One(prizePool); err != nil {
+	if err = db.Take(&prizePool, id).Error; err != nil {
 		return nil, err
 	}
 
-	if _, err = mapperQs.Filter("PrizePoolId", id).All(&mapper); err != nil {
+	queryMapper := &PrizePoolPrize{PrizePoolId: id}
+	if err = db.Where(queryMapper).Find(&mapper).Error; err != nil {
 		return nil, err
 	}
 
-	prizeQs := poolOrm.QueryTable(Prize{})
 	prizeInfos := make(map[int64]PrizePoolPrize, len(mapper))
 	prizeIds := make([]int64, len(mapper))
 	for i, v := range mapper {
@@ -136,11 +126,12 @@ func InfoPrizePool(id int64) (*PrizePool, error) {
 		prizeIds[i] = v.PrizeId
 	}
 
-	var size int64
-	if size, err = prizeQs.Filter("id__in", prizeIds).All(&prizes); err != nil {
+	// 当 slice 为空时会查询全部记录，所以最好不要使用简写方式
+	tempRe := db.Where("id in ?", prizeIds).Find(&prizes)
+	if err = tempRe.Error; err != nil {
 		return nil, err
 	}
-	if size != int64(len(mapper)) {
+	if tempRe.RowsAffected != int64(len(mapper)) {
 		return nil, fmt.Errorf("奖池中缺少对应的奖品")
 	}
 

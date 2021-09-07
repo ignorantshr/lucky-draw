@@ -2,32 +2,28 @@ package models
 
 import (
 	"fmt"
+	"log"
 	"lucky-draw/result"
 
 	"github.com/beego/beego/v2/client/orm"
 )
 
 type PrizePoolPrize struct {
-	Id               int64 `json:"id"`
-	PrizePoolId      int64
-	PrizeId          int64
+	PrizePoolId      int64 `gorm:"primaryKey;autoIncrement:false"`
+	PrizeId          int64 `gorm:"primaryKey;autoIncrement:false"`
 	PrizeProbability int
 	PrizeNumber      int64
 }
 
-var mapperOrm orm.Ormer
-var mapperQs orm.QuerySeter
-
-func init() {
-	mapperOrm = orm.NewOrm()
-	mapperQs = mapperOrm.QueryTable(new(PrizePoolPrize))
+func (PrizePoolPrize) TableName() string {
+	return "prize_pool_prize"
 }
 
 // 添加奖品到奖池
 func AddPrize2Pool(prizePool *PrizePool) error {
 	id := prizePool.Id
 	if !argCheck(id) {
-		return orm.ErrArgs
+		return result.PARAM_INVALID
 	}
 
 	for _, v := range prizePool.Prizes {
@@ -36,17 +32,16 @@ func AddPrize2Pool(prizePool *PrizePool) error {
 		}
 	}
 
-	return dotx(func(myTxOrm orm.TxOrmer) error {
-		size := len(prizePool.Prizes)
-		mappers := make([]*PrizePoolPrize, size)
-		for i, v := range prizePool.Prizes {
-			mappers[i] = genRecord(id, v)
-		}
-		if num, err := myTxOrm.InsertMulti(size, mappers); err != nil || num == 0 {
-			return fmt.Errorf(result.POOL_ADD_PRIZE_ERROR, id, mappers)
-		}
-		return nil
-	})
+	size := len(prizePool.Prizes)
+	mappers := make([]*PrizePoolPrize, size)
+	for i, v := range prizePool.Prizes {
+		mappers[i] = genRecord(id, v)
+	}
+	if err := db.CreateInBatches(mappers, size).Error; err != nil {
+		log.Println(err)
+		return fmt.Errorf(result.POOL_ADD_PRIZE_ERROR, id)
+	}
+	return nil
 }
 
 // 更新奖池的奖品
@@ -59,19 +54,12 @@ func UpdatePrize4Pool(id int64, prize *Prize) error {
 		return fmt.Errorf(result.NOT_EXIST_ERROR)
 	}
 
-	return dotx(func(myTxOrm orm.TxOrmer) error {
-		mapper := genRecord(id, prize)
-		if num, err := myTxOrm.
-			QueryTable(PrizePoolPrize{}).
-			Filter("PrizePoolId", mapper.PrizePoolId).Filter("PrizeId", mapper.PrizeId).
-			Update(orm.Params{
-				"PrizeProbability": mapper.PrizeProbability,
-				"PrizeNumber":      mapper.PrizeNumber,
-			}); err != nil || num != 1 {
-			return fmt.Errorf(result.POOL_UPDATE_PRIZE_ERROR, id, mapper)
-		}
-		return nil
-	})
+	mapper := genRecord(id, prize)
+	if err := db.Model(mapper).Updates(mapper).Error; err != nil {
+		log.Println()
+		return fmt.Errorf(result.POOL_UPDATE_PRIZE_ERROR, id)
+	}
+	return nil
 }
 
 // 从奖池删除奖品
@@ -89,12 +77,10 @@ func DelPrize4Pool(prizePool *PrizePool) error {
 		prizeIds[i] = &v.Id
 	}
 
-	return dotx(func(myTxOrm orm.TxOrmer) error {
-		if num, err := myTxOrm.QueryTable(PrizePoolPrize{}).Filter("PrizePoolId", poolId).Filter("PrizeId__in", prizeIds).Delete(); err != nil || num == 0 {
-			return fmt.Errorf(result.POOL_DEL_PRIZE_ERROR, poolId, prizePool.Prizes)
-		}
-		return nil
-	})
+	if err := db.Where("prize_pool_id = ? and prize_id in ?", poolId, prizeIds).Delete(PrizePoolPrize{}).Error; err != nil {
+		return fmt.Errorf(result.POOL_DEL_PRIZE_ERROR, poolId)
+	}
+	return nil
 }
 
 func argCheck(id int64) bool {
@@ -102,7 +88,8 @@ func argCheck(id int64) bool {
 }
 
 func isExist(poolId int64, prizeId int64) bool {
-	return mapperQs.Filter("PrizePoolId", poolId).Filter("PrizeId", prizeId).Exist()
+	re := db.Where(&PrizePoolPrize{PrizePoolId: poolId, PrizeId: prizeId}).Limit(1).Find(&PrizePoolPrize{})
+	return re.RowsAffected > 0
 }
 
 func normal(prize *Prize) {

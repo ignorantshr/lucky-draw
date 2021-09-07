@@ -5,10 +5,9 @@ import (
 	"fmt"
 	"log"
 	"lucky-draw/result"
-	"strings"
 
-	"github.com/beego/beego/v2/client/orm"
 	_ "github.com/go-sql-driver/mysql"
+	"gorm.io/gorm"
 )
 
 type Prize struct {
@@ -17,8 +16,12 @@ type Prize struct {
 	// Name string `json:"name"`
 	Url string `json:"url"`
 
-	Probability int   `json:"probability" orm:"-"` // 概率
-	Number      int64 `json:"number" orm:"-"`      // 数量
+	Probability int   `json:"probability" gorm:"-"` // 概率
+	Number      int64 `json:"number" gorm:"-"`      // 数量
+}
+
+func (Prize) TableName() string {
+	return "prize"
 }
 
 func (p *Prize) String() string {
@@ -27,65 +30,65 @@ func (p *Prize) String() string {
 }
 
 func AddPrize(prize *Prize) error {
-	return dotx(func(txOrm orm.TxOrmer) error {
-		_, err := txOrm.Insert(prize)
-		if err != nil {
-			log.Println(err)
-			return fmt.Errorf(result.ADD_ERROR, prize.Name)
-		}
-		log.Printf("add prize %v", prize)
-		return err
-	})
+	if err := db.Create(prize).Error; err != nil {
+		log.Println(err)
+		return fmt.Errorf(result.ADD_ERROR, prize.Name)
+	}
+	log.Printf("add prize %v", prize)
+	return nil
 }
 
 func UpdatePrize(prize *Prize) error {
 	if !idCheck(&prize.BaseModel) {
-		return orm.ErrArgs
+		return result.PARAM_INVALID
 	}
-	return dotx(func(txOrm orm.TxOrmer) error {
-		num, err := txOrm.Update(prize)
-		if err == nil && num != 1 {
-			return fmt.Errorf(result.UPDATE_ERROR, prize.Id)
-		}
-		log.Printf("update prize %v", prize)
-		return err
-	})
+
+	if err := db.Save(prize).Error; err != nil {
+		log.Println(err)
+		return fmt.Errorf(result.ADD_ERROR, prize.Name)
+	}
+	log.Printf("update prize %v", prize)
+	return nil
 }
 
 func DelPrize(id int64) error {
-	return dotx(func(txOrm orm.TxOrmer) error {
-		prize := &Prize{
-			BaseModel: BaseModel{Id: id},
-		}
-		if err := txOrm.Read(prize); err != nil {
+	return db.Transaction(func(tx *gorm.DB) error {
+		var prize *Prize
+		if err := db.Where(id).Take(&prize).Error; err != nil {
+			log.Println(err)
 			return fmt.Errorf(result.NOT_EXIST_ERROR)
 		}
-		num, err := txOrm.Delete(prize)
-		if err == nil && num != 1 {
-			return fmt.Errorf(result.DEL_ERROR, prize.Id)
+		if err := db.Delete(&Prize{}, id).Error; err != nil {
+			log.Println(err)
+			return fmt.Errorf(result.DEL_ERROR, prize.Name)
+		}
+		// 奖池-奖品 关联表
+		poolPrize := &PrizePoolPrize{
+			PrizeId: id,
+		}
+		if err := db.Delete(poolPrize).Error; err != nil {
+			log.Println(err)
+			return fmt.Errorf(result.DEL_ERROR, id)
 		}
 		log.Printf("delete prize %v", prize)
-		return err
+		return nil
 	})
 }
 
 func GetPrize(prize *Prize) ([]*Prize, error) {
 	var ps []*Prize
-	o := orm.NewOrm()
-	qs := o.QueryTable(prize)
-	if prize.Id != 0 {
-		qs = qs.Filter("id", prize.Id)
+	err := db.Where("name like ?", "%"+prize.Name+"%").Find(&ps).Error
+	if err != nil {
+		log.Println(err)
 	}
-	if strings.TrimSpace(prize.Name) != "" {
-		qs = qs.Filter("name__contains", prize.Name)
-	}
-	_, err := qs.All(&ps)
 	return ps, err
 }
 
 func GetAllPrize() ([]*Prize, error) {
 	var ps []*Prize
-	o := orm.NewOrm()
-	_, err := o.QueryTable(Prize{}).All(&ps)
+	err := db.Find(&ps).Error
+	if err != nil {
+		log.Println(err)
+	}
 	return ps, err
 }
