@@ -12,7 +12,7 @@ const (
 
 type Result struct {
 	Code   int         `json:"code"`
-	Msg    string      `json:"name"`
+	Msg    string      `json:"msg"`
 	Result interface{} `json:"result"`
 }
 

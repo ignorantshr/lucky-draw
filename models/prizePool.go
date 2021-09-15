@@ -70,10 +70,7 @@ func DelPrizePool(id int64) error {
 		}
 
 		// 奖池-奖品 关联表
-		poolPrize := &PrizePoolPrize{
-			PrizePoolId: id,
-		}
-		if err := db.Delete(poolPrize).Error; err != nil {
+		if err := db.Where("prize_pool_id = ?", id).Delete(&PrizePoolPrize{}).Error; err != nil {
 			log.Println(err)
 			return fmt.Errorf(result.DEL_ERROR, id)
 		}
@@ -83,10 +80,15 @@ func DelPrizePool(id int64) error {
 	})
 }
 
-// 根据名称查询
+// 根据id、名称查询
 func GetPrizePool(prizePool *PrizePool) ([]*PrizePool, error) {
 	var ps []*PrizePool
-	err := db.Where("name like ?", "%"+prizePool.Name+"%").Find(&ps).Error
+	var err error
+	if prizePool.Id != 0 {
+		err = db.Where("id = ?", prizePool.Id).Find(&ps).Error
+	} else {
+		err = db.Where("name like ?", "%"+prizePool.Name+"%").Find(&ps).Error
+	}
 	if err != nil {
 		log.Println(err)
 	}

@@ -63,10 +63,7 @@ func DelPrize(id int64) error {
 			return fmt.Errorf(result.DEL_ERROR, prize.Name)
 		}
 		// 奖池-奖品 关联表
-		poolPrize := &PrizePoolPrize{
-			PrizeId: id,
-		}
-		if err := db.Delete(poolPrize).Error; err != nil {
+		if err := db.Where("prize_id = ?", id).Delete(&PrizePoolPrize{}).Error; err != nil {
 			log.Println(err)
 			return fmt.Errorf(result.DEL_ERROR, id)
 		}
@@ -77,7 +74,12 @@ func DelPrize(id int64) error {
 
 func GetPrize(prize *Prize) ([]*Prize, error) {
 	var ps []*Prize
-	err := db.Where("name like ?", "%"+prize.Name+"%").Find(&ps).Error
+	var err error
+	if prize.Id != 0 {
+		err = db.Where("id = ?", prize.Id).Find(&ps).Error
+	} else {
+		err = db.Where("name like ?", "%"+prize.Name+"%").Find(&ps).Error
+	}
 	if err != nil {
 		log.Println(err)
 	}

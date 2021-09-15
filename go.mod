@@ -5,6 +5,7 @@ go 1.16
 require github.com/beego/beego/v2 v2.0.1
 
 require (
+	astuart.co/go-jasypt v0.0.0-20181213025715-d0528ebfdc81 // indirect
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/golang/protobuf v1.5.2 // indirect

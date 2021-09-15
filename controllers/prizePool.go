@@ -24,47 +24,47 @@ type PrizePoolController struct {
 	beego.Controller
 }
 
-// @router /prizePool/add [post]
+// @router /lucky-draw/prizePool/add [post]
 func (p *PrizePoolController) Add() {
 	p.execute(addAction)
 }
 
-// @router /prizePool/update [post]
+// @router /lucky-draw/prizePool/update [post]
 func (p *PrizePoolController) Update() {
 	p.execute(updateAction)
 }
 
-// @router /prizePool/delete [post]
+// @router /lucky-draw/prizePool/delete [post]
 func (p *PrizePoolController) Delete() {
 	p.execute(delAction)
 }
 
-// @router /prizePool/addPrize [post]
+// @router /lucky-draw/prizePool/addPrize [post]
 func (p *PrizePoolController) AddPrize() {
 	p.execute(poolAddPrizeAction)
 }
 
-// @router /prizePool/updatePrize [post]
+// @router /lucky-draw/prizePool/updatePrize [post]
 func (p *PrizePoolController) UpdatePrize() {
 	p.execute(poolUpdatePrizeAction)
 }
 
-// @router /prizePool/delPrize [post]
+// @router /lucky-draw/prizePool/delPrize [post]
 func (p *PrizePoolController) DelPrize4Pool() {
 	p.execute(poolDelPrizeAction)
 }
 
-// @router /prizePool/get [post]
+// @router /lucky-draw/prizePool/get [post]
 func (p *PrizePoolController) Get() {
 	p.execute(getAction)
 }
 
-// @router /prizePool/info [post]
+// @router /lucky-draw/prizePool/info [post]
 func (p *PrizePoolController) Info() {
 	p.execute(infoAction)
 }
 
-// @router /prizePool/getAll [get]
+// @router /lucky-draw/prizePool/getAll [get]
 func (p *PrizePoolController) GetAll() {
 	ps, err := prizePoolService.GetAll()
 	if err != nil {

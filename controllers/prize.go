@@ -20,27 +20,27 @@ type PrizeController struct {
 	beego.Controller
 }
 
-// @router /prize/add [post]
+// @router /lucky-draw/prize/add [post]
 func (p *PrizeController) Add() {
 	p.execute(addAction)
 }
 
-// @router /prize/update [post]
+// @router /lucky-draw/prize/update [post]
 func (p *PrizeController) Update() {
 	p.execute(updateAction)
 }
 
-// @router /prize/delete [post]
+// @router /lucky-draw/prize/delete [post]
 func (p *PrizeController) Delete() {
 	p.execute(delAction)
 }
 
-// @router /prize/get [post]
+// @router /lucky-draw/prize/get [post]
 func (p *PrizeController) Get() {
 	p.execute(getAction)
 }
 
-// @router /prize/getAll [get]
+// @router /lucky-draw/prize/getAll [get]
 func (p *PrizeController) GetAll() {
 	ps, err := prizeService.GetAll()
 	if err != nil {
