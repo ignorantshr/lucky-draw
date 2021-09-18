@@ -9,7 +9,8 @@ import (
 )
 
 func TestJasypt(t *testing.T) {
-	en := "1t5nz/OjJvJKV44K6nYgPfOD0iCVYaVs"
+	en := "nzd28bw2X+5o2E85uZE4h0FO2JIPk4Vz"
+	// en := "1t5nz/OjJvJKV44K6nYgPfOD0iCVYaVs"
 	// en := jfNpQI9nKsUkBMkIxX0qz5Ft9T5ACtKnUgUeJBCFuxK3ofh24PbuNlnxIOr0P7Jeay81gCY3hIUTLvF5xlgVp9sAktdAjOaL
 	bs, err := base64.StdEncoding.DecodeString(en)
 	if err != nil {

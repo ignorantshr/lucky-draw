@@ -74,7 +74,22 @@ func (p *PrizePoolController) GetAll() {
 	}
 }
 
-// @router /prizePool/draw [get]
+// @router /lucky-draw/prizePool/getUnpoolPrizes [post]
+func (p *PrizePoolController) GetUnpoolPrizes() {
+	var prizePool *models.PrizePool
+	var err error
+	if err = json.Unmarshal(p.Ctx.Input.RequestBody, &prizePool); err == nil {
+		prizes, err := prizePoolService.GetUnpoolPrizes(prizePool)
+
+		if err != nil {
+			p.serverJson(result.ERROR(err.Error()))
+		} else if prizes != nil {
+			p.serverJson(result.OK_RESULT(prizes))
+		}
+	}
+}
+
+// @router /lucky-draw/prizePool/draw [get]
 func (p *PrizePoolController) Draw() {
 	var err error
 	pooId, err := p.GetInt64("id")
@@ -105,26 +120,12 @@ func (p *PrizePoolController) Draw() {
 		probMapper := make(map[int64][2]int)
 		end := 0
 		for _, v := range pool.Prizes {
-			if v.Id == 1 {
-				// 空奖跳过，只有按数量抽奖时才有意义
-				continue
-			}
 			probMapper[v.Id] = [2]int{end, end + v.Probability}
 			end += v.Probability
 		}
 		log.Printf("priz map: %v", probMapper)
 		var n int
-		if end < 100 {
-			// 有不中奖的概率
-			n = rand.Intn(100)
-			// 未中奖直接返回空值
-			if n >= end {
-				p.serverJson(result.OK())
-				return
-			}
-		} else {
-			n = rand.Intn(end)
-		}
+		n = rand.Intn(end)
 		for k, v := range probMapper {
 			if v[0] <= n && n < v[1] {
 				p.serverJson(result.OK_RESULT(prizes[k]))

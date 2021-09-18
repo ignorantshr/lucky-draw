@@ -90,6 +90,15 @@ func init() {
 
     beego.GlobalControllerRouter["lucky-draw/controllers:PrizePoolController"] = append(beego.GlobalControllerRouter["lucky-draw/controllers:PrizePoolController"],
         beego.ControllerComments{
+            Method: "Draw",
+            Router: "/lucky-draw/prizePool/draw",
+            AllowHTTPMethods: []string{"get"},
+            MethodParams: param.Make(),
+            Filters: nil,
+            Params: nil})
+
+    beego.GlobalControllerRouter["lucky-draw/controllers:PrizePoolController"] = append(beego.GlobalControllerRouter["lucky-draw/controllers:PrizePoolController"],
+        beego.ControllerComments{
             Method: "Get",
             Router: "/lucky-draw/prizePool/get",
             AllowHTTPMethods: []string{"post"},
@@ -102,6 +111,15 @@ func init() {
             Method: "GetAll",
             Router: "/lucky-draw/prizePool/getAll",
             AllowHTTPMethods: []string{"get"},
+            MethodParams: param.Make(),
+            Filters: nil,
+            Params: nil})
+
+    beego.GlobalControllerRouter["lucky-draw/controllers:PrizePoolController"] = append(beego.GlobalControllerRouter["lucky-draw/controllers:PrizePoolController"],
+        beego.ControllerComments{
+            Method: "GetUnpoolPrizes",
+            Router: "/lucky-draw/prizePool/getUnpoolPrizes",
+            AllowHTTPMethods: []string{"post"},
             MethodParams: param.Make(),
             Filters: nil,
             Params: nil})
@@ -129,15 +147,6 @@ func init() {
             Method: "UpdatePrize",
             Router: "/lucky-draw/prizePool/updatePrize",
             AllowHTTPMethods: []string{"post"},
-            MethodParams: param.Make(),
-            Filters: nil,
-            Params: nil})
-
-    beego.GlobalControllerRouter["lucky-draw/controllers:PrizePoolController"] = append(beego.GlobalControllerRouter["lucky-draw/controllers:PrizePoolController"],
-        beego.ControllerComments{
-            Method: "Draw",
-            Router: "/prizePool/draw",
-            AllowHTTPMethods: []string{"get"},
             MethodParams: param.Make(),
             Filters: nil,
             Params: nil})

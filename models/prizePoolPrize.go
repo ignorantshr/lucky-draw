@@ -83,6 +83,28 @@ func DelPrize4Pool(prizePool *PrizePool) error {
 	return nil
 }
 
+// 获取所有未附加到此奖池的奖品
+func GetUnpoolPrizes(id int64) ([]*Prize, error) {
+	var err error
+
+	var mapper []*PrizePoolPrize = make([]*PrizePoolPrize, 0)
+	if err = db.Where("prize_pool_id = ?", id).Find(&mapper).Error; err != nil {
+		return nil, err
+	}
+
+	prizeIds := make([]int64, len(mapper))
+	for i, v := range mapper {
+		prizeIds[i] = v.PrizeId
+	}
+
+	prizes := make([]*Prize, 0)
+	if err = db.Where("id not in ?", prizeIds).Find(&prizes).Error; err != nil {
+		return nil, err
+	}
+
+	return prizes, err
+}
+
 func argCheck(id int64) bool {
 	return id > 0
 }
