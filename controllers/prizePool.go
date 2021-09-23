@@ -44,6 +44,11 @@ func (p *PrizePoolController) AddPrize() {
 	p.execute(poolAddPrizeAction)
 }
 
+// @router /lucky-draw/prizePool/addNewPrize [post]
+func (p *PrizePoolController) AddNewPrize() {
+	p.execute(poolAddNewPrizeAction)
+}
+
 // @router /lucky-draw/prizePool/updatePrize [post]
 func (p *PrizePoolController) UpdatePrize() {
 	p.execute(poolUpdatePrizeAction)
@@ -198,6 +203,8 @@ func (p *PrizePoolController) execute(action actionType) {
 		switch action {
 		case addAction:
 			err = prizePoolService.Add(&prizePool)
+		case poolAddNewPrizeAction:
+			err = prizePoolService.AddNewPrize(&prizePool)
 		case updateAction:
 			err = prizePoolService.Update(&prizePool)
 		case delAction:

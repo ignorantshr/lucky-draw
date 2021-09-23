@@ -19,6 +19,40 @@ func (PrizePoolPrize) TableName() string {
 	return "prize_pool_prize"
 }
 
+// 添加新的奖品到奖池
+func AddNewPrize2Pool(pool *PrizePool) error {
+	id := pool.Id
+	if !argCheck(id) {
+		return result.PARAM_INVALID
+	}
+	var err error
+
+	for _, p := range pool.Prizes {
+		if err = AddPrize(p); err != nil {
+			return err
+		}
+		tmp, err := GetPrizeByName(p.Name)
+		if err != nil {
+			return err
+		}
+		p.Id = tmp.Id
+
+		normal(p)
+		mapper := &PrizePoolPrize{
+			PrizePoolId:      id,
+			PrizeId:          p.Id,
+			PrizeProbability: p.Probability,
+			PrizeNumber:      p.Number,
+		}
+
+		if err = db.Create(mapper).Error; err != nil {
+			log.Println(err)
+			return fmt.Errorf(result.POOL_ADD_PRIZE_ERROR, id)
+		}
+	}
+	return nil
+}
+
 // 添加奖品到奖池
 func AddPrize2Pool(prizePool *PrizePool) error {
 	id := prizePool.Id
@@ -146,6 +180,9 @@ func isExist(poolId int64, prizeId int64) bool {
 func normal(prize *Prize) {
 	if prize.Probability < 0 {
 		prize.Probability = 0
+	}
+	if prize.Number < 0 {
+		prize.Number = 0
 	}
 }
 

@@ -20,6 +20,10 @@ func (service *PrizePoolService) AddPrize(prizePool *models.PrizePool) error {
 	return models.AddPrize2Pool(prizePool)
 }
 
+func (service *PrizePoolService) AddNewPrize(prizePool *models.PrizePool) error {
+	return models.AddNewPrize2Pool(prizePool)
+}
+
 func (service *PrizePoolService) UpdatePrize(prizePool *models.PrizePool) error {
 	for _, v := range prizePool.Prizes {
 		return models.UpdatePrize4Pool(prizePool.Id, v)

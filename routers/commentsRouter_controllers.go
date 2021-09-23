@@ -63,6 +63,15 @@ func init() {
 
     beego.GlobalControllerRouter["lucky-draw/controllers:PrizePoolController"] = append(beego.GlobalControllerRouter["lucky-draw/controllers:PrizePoolController"],
         beego.ControllerComments{
+            Method: "AddNewPrize",
+            Router: "/lucky-draw/prizePool/addNewPrize",
+            AllowHTTPMethods: []string{"post"},
+            MethodParams: param.Make(),
+            Filters: nil,
+            Params: nil})
+
+    beego.GlobalControllerRouter["lucky-draw/controllers:PrizePoolController"] = append(beego.GlobalControllerRouter["lucky-draw/controllers:PrizePoolController"],
+        beego.ControllerComments{
             Method: "AddPrize",
             Router: "/lucky-draw/prizePool/addPrize",
             AllowHTTPMethods: []string{"post"},

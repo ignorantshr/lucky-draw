@@ -10,6 +10,7 @@ const (
 	infoAction
 
 	poolAddPrizeAction
+	poolAddNewPrizeAction
 	poolUpdatePrizeAction
 	poolDelPrizeAction
 )

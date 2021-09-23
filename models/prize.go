@@ -18,8 +18,8 @@ type Prize struct {
 	Url string `json:"url"`
 
 	// 附加属性
-	Probability int   `json:"probability"` // 概率
-	Number      int64 `json:"number"`      // 数量
+	Probability int   `json:"probability" gorm:"-"` // 概率
+	Number      int64 `json:"number" gorm:"-"`      // 数量
 }
 
 func (Prize) TableName() string {
@@ -86,6 +86,15 @@ func GetPrize(prize *Prize) ([]*Prize, error) {
 		log.Println(err)
 	}
 	return ps, err
+}
+
+func GetPrizeByName(name string) (*Prize, error) {
+	var p Prize
+	err := db.Where("name = ?", name).Find(&p).Error
+	if err != nil {
+		log.Println(err)
+	}
+	return &p, err
 }
 
 func GetAllPrize() ([]*Prize, error) {
