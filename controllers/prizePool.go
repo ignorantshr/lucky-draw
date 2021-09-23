@@ -143,6 +143,10 @@ func (p *PrizePoolController) Draw() {
 			end += v.Probability
 		}
 		log.Printf("priz map: %v", probMapper)
+		if end <= 0 {
+			p.serverJson(result.OK())
+			return
+		}
 		var n int
 		n = rand.Intn(end)
 		for k, v := range probMapper {
@@ -165,6 +169,10 @@ func (p *PrizePoolController) Draw() {
 			end += v.Number
 		}
 		log.Printf("prize map: %v", numMapper)
+		if end <= 0 {
+			p.serverJson(result.OK())
+			return
+		}
 		var n int64
 		n = rand.Int63n(end + nullNum)
 		// 未中奖直接返回空值
