@@ -11,13 +11,15 @@ import (
 )
 
 type Prize struct {
+	// 基本属性
 	BaseModel
 	// Id   int64  `json:"id"`
 	// Name string `json:"name"`
 	Url string `json:"url"`
 
-	Probability int   `json:"probability" gorm:"-"` // 概率
-	Number      int64 `json:"number" gorm:"-"`      // 数量
+	// 附加属性
+	Probability int   `json:"probability"` // 概率
+	Number      int64 `json:"number"`      // 数量
 }
 
 func (Prize) TableName() string {

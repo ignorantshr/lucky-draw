@@ -97,11 +97,40 @@ func GetUnpoolPrizes(id int64) ([]*Prize, error) {
 		prizeIds[i] = v.PrizeId
 	}
 
+	log.Printf("now prizes: %v\n", prizeIds)
 	prizes := make([]*Prize, 0)
+	if len(prizeIds) == 0 {
+		return GetAllPrize()
+	}
 	if err = db.Where("id not in ?", prizeIds).Find(&prizes).Error; err != nil {
 		return nil, err
 	}
 
+	log.Printf("remain prizes: %s\n", prizes)
+
+	return prizes, err
+}
+
+// 查询附加到此奖池的奖品
+func GetPrizes(query *PoolPrizeQuery) ([]*Prize, error) {
+	var err error
+	var prize Prize
+	prizes := make([]*Prize, 0)
+	baseSql := "select prize.*, m.prize_probability as probability, m.prize_number as number from prize left join prize_pool_prize m on prize.id = m.prize_id "
+
+	if query.PrizeId != 0 {
+		if err = db.Raw(baseSql+"where m.prize_pool_id = ? and m.prize_id = ?",
+			query.PoolId, query.PoolId).Scan(&prize).Error; err != nil {
+			return nil, err
+		}
+		prizes = append(prizes, &prize)
+		return prizes, nil
+	}
+
+	if err = db.Raw(baseSql+"where m.prize_pool_id = ? and prize.name like ?",
+		query.PoolId, "%"+query.PrizeName+"%").Scan(&prizes).Error; err != nil {
+		return nil, err
+	}
 	return prizes, err
 }
 

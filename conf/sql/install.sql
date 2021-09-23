@@ -14,7 +14,7 @@ CREATE TABLE `prize` (
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE KEY `name_INDEX` (`name`) USING BTREE
 ) ENGINE=InnoDB COMMENT='奖品表';
-INSERT INTO `prize` VALUES(1, "空奖", NULL);
+INSERT INTO `prize` VALUES(1, "空奖", 'http://localhost:8080/static/img/%E4%B8%8B%E6%AC%A1%E4%B8%80%E5%AE%9A.png');
 
 SELECT 'create table prize_pool';
 DROP TABLE IF EXISTS `prize_pool`;

@@ -74,6 +74,20 @@ func (p *PrizePoolController) GetAll() {
 	}
 }
 
+// @router /lucky-draw/prizePool/getPrizes [post]
+func (p *PrizePoolController) GetPrizes() {
+	var query models.PoolPrizeQuery
+	var err error
+	if err = json.Unmarshal(p.Ctx.Input.RequestBody, &query); err != nil {
+		p.serverJson(result.ERROR(err.Error()))
+	}
+	prizes, err := prizePoolService.GetPrizes(&query)
+	if err != nil {
+		p.serverJson(result.ERROR(err.Error()))
+	}
+	p.serverJson(result.OK_RESULT(prizes))
+}
+
 // @router /lucky-draw/prizePool/getUnpoolPrizes [post]
 func (p *PrizePoolController) GetUnpoolPrizes() {
 	var prizePool *models.PrizePool

@@ -43,6 +43,10 @@ func (service *PrizePoolService) GetAll() ([]*models.PrizePool, error) {
 	return models.GetAllPrizePool()
 }
 
+func (service *PrizePoolService) GetPrizes(query *models.PoolPrizeQuery) ([]*models.Prize, error) {
+	return models.GetPrizes(query)
+}
+
 func (service *PrizePoolService) GetUnpoolPrizes(prizePool *models.PrizePool) ([]*models.Prize, error) {
 	return models.GetUnpoolPrizes(prizePool.Id)
 }
