@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"log"
 	"lucky-draw/result"
-
-	"github.com/beego/beego/v2/client/orm"
 )
 
 type PrizePoolPrize struct {
@@ -81,7 +79,7 @@ func AddPrize2Pool(prizePool *PrizePool) error {
 // 更新奖池的奖品
 func UpdatePrize4Pool(id int64, prize *Prize) error {
 	if !argCheck(id) || !argCheck(prize.Id) {
-		return orm.ErrArgs
+		return result.PARAM_INVALID
 	}
 
 	if !isExist(id, prize.Id) {
@@ -100,7 +98,7 @@ func UpdatePrize4Pool(id int64, prize *Prize) error {
 func DelPrize4Pool(prizePool *PrizePool) error {
 	poolId := prizePool.Id
 	if !argCheck(poolId) {
-		return orm.ErrArgs
+		return result.PARAM_INVALID
 	}
 
 	prizeIds := make([]*int64, len(prizePool.Prizes))
@@ -147,25 +145,48 @@ func GetUnpoolPrizes(id int64) ([]*Prize, error) {
 
 // 查询附加到此奖池的奖品
 func GetPrizes(query *PoolPrizeQuery) ([]*Prize, error) {
+	type PrizeResult struct {
+		// 基本属性
+		Id   int64  `json:"id"`
+		Name string `json:"name"`
+		Url  string `json:"url"`
+
+		// 附加属性
+		Probability int   `json:"probability"` // 概率
+		Number      int64 `json:"number"`      // 数量
+	}
 	var err error
-	var prize Prize
-	prizes := make([]*Prize, 0)
+	var pr PrizeResult
+	prs := make([]*PrizeResult, 0)
 	baseSql := "select prize.*, m.prize_probability as probability, m.prize_number as number from prize left join prize_pool_prize m on prize.id = m.prize_id "
 
 	if query.PrizeId != 0 {
 		if err = db.Raw(baseSql+"where m.prize_pool_id = ? and m.prize_id = ?",
-			query.PoolId, query.PoolId).Scan(&prize).Error; err != nil {
+			query.PoolId, query.PoolId).Scan(&pr).Error; err != nil {
 			return nil, err
 		}
-		prizes = append(prizes, &prize)
-		return prizes, nil
+		prs = append(prs, &pr)
+	} else {
+		if err = db.Raw(baseSql+"where m.prize_pool_id = ? and prize.name like ?",
+			query.PoolId, "%"+query.PrizeName+"%").Scan(&prs).Error; err != nil {
+			return nil, err
+		}
 	}
 
-	if err = db.Raw(baseSql+"where m.prize_pool_id = ? and prize.name like ?",
-		query.PoolId, "%"+query.PrizeName+"%").Scan(&prizes).Error; err != nil {
-		return nil, err
+	prizes := make([]*Prize, len(prs))
+	for i, v := range prs {
+		prizes[i] = &Prize{
+			BaseModel: BaseModel{
+				Id:   v.Id,
+				Name: v.Name,
+			},
+			Url:         v.Url,
+			Probability: v.Probability,
+			Number:      v.Number,
+		}
 	}
-	return prizes, err
+
+	return prizes, nil
 }
 
 func argCheck(id int64) bool {
