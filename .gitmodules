@@ -1,0 +1,3 @@
+[submodule "lucky-draw-ui"]
+	path = lucky-draw-ui
+	url = git@github.com:ignorantshr/lucky-draw-ui.git
