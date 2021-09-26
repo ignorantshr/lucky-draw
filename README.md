@@ -35,7 +35,6 @@ mysql > source conf/sql/install.sql
 
 ## docker
 ### build image
-after the [build](#build) step, execute:
 ```
 docker build -t lucky-draw:v1.1 .
 ```
@@ -50,5 +49,5 @@ env:
 
 e.g.
 ```
-docker run -d --name draw -p 8081:80 --env mysql_host="10.221.5.7" --env mysql_passwd="Lenovo123-" lucky-draw:v1.1
+docker run -d --name draw -p 8081:80 --env mysql_host="10.10.5.7" --env mysql_passwd="xxx" lucky-draw:v1.1
 ```
