@@ -2,6 +2,7 @@ FROM nginx
 
 ENV mysql_host='localhost'
 ENV mysql_port=3306
+ENV mysql_db='lucky_draw'
 ENV mysql_user='root'
 ENV mysql_passwd=''
 

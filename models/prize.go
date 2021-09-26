@@ -31,6 +31,12 @@ func (p *Prize) String() string {
 	return fmt.Sprintf("%s", jsonBtyes)
 }
 
+func init() {
+	if prizes, _ := GetPrize(&Prize{BaseModel: BaseModel{Id: 1}}); len(prizes) == 0 {
+		AddPrize(&Prize{BaseModel: BaseModel{Id: 1, Name: "空奖"}, Url: "https://img12.360buyimg.com/n1/jfs/t3772/105/602238500/79292/dd8c8f6f/580ea45eN030695f3.jpg"})
+	}
+}
+
 func AddPrize(prize *Prize) error {
 	if err := db.Create(prize).Error; err != nil {
 		log.Println(err)
